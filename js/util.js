@@ -394,7 +394,7 @@ Bugzilla.API = class API {
       params.append('Bugzilla_api_token', BUGZILLA.api_token);
     }
 
-    return fetch(`/rest/${method}?${params.toString()}`, {
+    return fetch(`${BUGZILLA.config.basepath}rest/${method}?${params.toString()}`, {
       headers: new Headers({
         'Accept': 'application/json',
         'Content-Type': 'application/json',

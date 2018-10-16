@@ -65,7 +65,8 @@ Bugzilla.QuickSearch = class QuickSearch {
 
       $li.setAttribute('role', 'none');
       $a.setAttribute('role', 'option');
-      $a.setAttribute('href', link); // Don't use `href` property because it prepends `location.origin`
+      // Don't use `$a.href` because it prepends `location.origin`
+      $a.setAttribute('href', `${BUGZILLA.config.basepath}${link}`);
       $a.innerHTML = highlight ? Bugzilla.String.highlight(label, input) : label;
 
       // Allow Alt+click on the link to search all bugs matching the criteria (see `searchbox_onkeydown()` below)
@@ -93,7 +94,7 @@ Bugzilla.QuickSearch = class QuickSearch {
   show_search_terms(input = this.input) {
     this.show_results(this.sections.search, input, input ? [{
       label: Bugzilla.L10n.get(`search_terms_in_${this.alt_pressed ? 'all' : 'open'}_bugs`, input.htmlEncode()),
-      link: `/buglist.cgi?quicksearch=${encodeURIComponent(input)}`,
+      link: `buglist.cgi?quicksearch=${encodeURIComponent(input)}`,
     }] : [], false);
   }
 
@@ -111,7 +112,7 @@ Bugzilla.QuickSearch = class QuickSearch {
 
     this.show_results(this.sections.recent, input, results.slice(0, 6).map(({ id, alias, summary }) => ({
       label: `${id}${alias ? ` (${alias})` : ''} - ${summary}`,
-      link: `/show_bug.cgi?id=${id}`,
+      link: `show_bug.cgi?id=${id}`,
     })));
   }
 
@@ -157,7 +158,7 @@ Bugzilla.QuickSearch = class QuickSearch {
 
     this.show_results(this.sections.products, input, results.slice(0, 4).map(({ product, component }) => ({
       label: `${product} :: ${component}`,
-      link: `/buglist.cgi?quicksearch=${encodeURIComponent(`product:"${product}" component:"${component}"`)}`,
+      link: `buglist.cgi?quicksearch=${encodeURIComponent(`product:"${product}" component:"${component}"`)}`,
     })));
   }
 
@@ -170,7 +171,7 @@ Bugzilla.QuickSearch = class QuickSearch {
 
     this.show_results(this.sections.keywords, input, results.slice(0, 4).map(({ name }) => ({
       label: name,
-      link: `/buglist.cgi?quicksearch=${encodeURIComponent(`keywords:${name}`)}`,
+      link: `buglist.cgi?quicksearch=${encodeURIComponent(`keywords:${name}`)}`,
     })));
   }
 
@@ -180,8 +181,8 @@ Bugzilla.QuickSearch = class QuickSearch {
    * @see https://bugzilla.mozilla.org/page.cgi?id=quicksearch.html
    */
   toggle_all_bugs_search() {
-    const $search_link = this.sections.search.querySelector('a[href^="/buglist.cgi"]');
-    const link_open = '/buglist.cgi?quicksearch=';
+    const $search_link = this.sections.search.querySelector(`a[href^="${BUGZILLA.config.basepath}buglist.cgi"]`);
+    const link_open = `${BUGZILLA.config.basepath}buglist.cgi?quicksearch=`;
     const link_all = `${link_open}ALL+`;
 
     // Replace the link label for the current search terms
@@ -191,7 +192,7 @@ Bugzilla.QuickSearch = class QuickSearch {
     }
 
     // Replace all the quicksearch URLs
-    for (const $link of this.$dropdown.querySelectorAll('a[href^="/buglist.cgi"]')) {
+    for (const $link of this.$dropdown.querySelectorAll(`a[href^="${BUGZILLA.config.basepath}buglist.cgi"]`)) {
       const href = $link.getAttribute('href');
       const has_all = href.startsWith(link_all);
 
