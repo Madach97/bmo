@@ -14,6 +14,7 @@ use utf8;
 use Encode;
 
 use Bugzilla          ();
+use Bugzilla::Constants;
 use Bugzilla::BugMail ();
 use Bugzilla::CGI     ();
 use Bugzilla::Constants qw(bz_locations);
@@ -21,7 +22,6 @@ use Bugzilla::Extension             ();
 use Bugzilla::Install::Requirements ();
 use Bugzilla::Logging;
 use Bugzilla::Quantum::CGI;
-use Bugzilla::Quantum::OAuth2 qw(oauth2);
 use Bugzilla::Quantum::SES;
 use Bugzilla::Quantum::Home;
 use Bugzilla::Quantum::Static;
@@ -46,9 +46,7 @@ sub startup {
   $self->plugin('ForwardedFor') if Bugzilla->has_feature('better_xff');
   $self->plugin('Bugzilla::Quantum::Plugin::BlockIP');
   $self->plugin('Bugzilla::Quantum::Plugin::Helpers');
-
-  # OAuth2 Support
-  oauth2($self);
+  $self->plugin('Bugzilla::Quantum::Plugin::OAuth2');
 
   # hypnotoad is weird and doesn't look for MOJO_LISTEN itself.
   $self->config(
@@ -148,6 +146,42 @@ sub setup_routes {
     }
   );
   $ses_auth->any('/index.cgi')->to('SES#main');
+
+  # Manage the client list
+  my $client_route = $r->under(
+    '/admin/oauth' => sub {
+      my ($c) = @_;
+      my $user = $c->bugzilla->login(LOGIN_REQUIRED) || return undef;
+      $user->in_group('admin')
+        || ThrowUserError('auth_failure',
+        {group => 'admin', action => 'edit', object => 'oauth_clients'});
+      return 1;
+    }
+  );
+  $client_route->any('/list')->to('OAuth2::Clients#list')->name('list_clients');
+  $client_route->any('/create')->to('OAuth2::Clients#create')
+    ->name('create_client');
+  $client_route->any('/delete')->to('OAuth2::Clients#delete')
+    ->name('delete_client');
+  $client_route->any('/edit')->to('OAuth2::Clients#edit')->name('edit_client');
+
+  $self->helper(
+    'bugzilla.oauth' => sub {
+      my ($c, @scopes) = @_;
+
+      my $oauth = $c->oauth(@scopes);
+
+      if ($oauth && $oauth->{user_id}) {
+        my $user = Bugzilla::User->check({id => $oauth->{user_id}, cache => 1});
+        Bugzilla->set_user($user);
+        return $user;
+      }
+
+      return undef;
+    }
+  );
+
+  return 1;
 }
 
 1;
