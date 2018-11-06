@@ -165,22 +165,6 @@ sub setup_routes {
     ->name('delete_client');
   $client_route->any('/edit')->to('OAuth2::Clients#edit')->name('edit_client');
 
-  $self->helper(
-    'bugzilla.oauth' => sub {
-      my ($c, @scopes) = @_;
-
-      my $oauth = $c->oauth(@scopes);
-
-      if ($oauth && $oauth->{user_id}) {
-        my $user = Bugzilla::User->check({id => $oauth->{user_id}, cache => 1});
-        Bugzilla->set_user($user);
-        return $user;
-      }
-
-      return undef;
-    }
-  );
-
   return 1;
 }
 

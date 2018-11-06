@@ -29,6 +29,22 @@ sub register {
   $config->{store_access_token}        = \&_store_access_token;
   $config->{verify_access_token}       = \&_verify_access_token;
 
+  $app->helper(
+    'bugzilla.oauth' => sub {
+      my ($c, @scopes) = @_;
+
+      my $oauth = $c->oauth(@scopes);
+
+      if ($oauth && $oauth->{user_id}) {
+        my $user = Bugzilla::User->check({id => $oauth->{user_id}, cache => 1});
+        Bugzilla->set_user($user);
+        return $user;
+      }
+
+      return undef;
+    }
+  );
+
   return $self->SUPER::register($app, $config);
 }
 
