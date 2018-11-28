@@ -1,0 +1,13 @@
+diff --git a/extensions/GuidedBugEntry/template/en/default/guided/guided.html.tmpl b/extensions/GuidedBugEntry/template/en/default/guided/guided.html.tmpl
+index 8026bcd39..60c5b33e1 100644
+--- a/extensions/GuidedBugEntry/template/en/default/guided/guided.html.tmpl
++++ b/extensions/GuidedBugEntry/template/en/default/guided/guided.html.tmpl
+@@ -413,8 +413,6 @@ explain how to write effective [% terms.bug %] reports.</li>
+     [% PROCESS help id="component_help" %]
+     <div id="component_help" class="hidden help">
+     The area where the problem occurs.<br>
+-    <br>
+-    If you are unsure which component to use, select a 'General' component.
+     </div>
+ </tr>
+ 
